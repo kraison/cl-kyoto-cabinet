@@ -45,4 +45,7 @@
     :author "Kevin Raison <last name @ chatsubo dot net>"
     :licence "New BSD"
     :depends-on ((:version :cffi "0.10.3"))
-    :components ((:file "cl-kyoto-cabinet-package")))
+    :components ((:file "cl-kyoto-cabinet-package")
+		 (:file "kyoto-cabinet-ffi" 
+			:depends-on ("cl-kyoto-cabinet-package"))))
+
