@@ -47,5 +47,8 @@
     :depends-on ((:version :cffi "0.10.3"))
     :components ((:file "cl-kyoto-cabinet-package")
 		 (:file "kyoto-cabinet-ffi" 
-			:depends-on ("cl-kyoto-cabinet-package"))))
+			:depends-on ("cl-kyoto-cabinet-package"))
+		 (:file "kyoto-cabinet"
+			:depends-on ("cl-kyoto-cabinet-package" "kyoto-cabinet-ffi"))
+		 ))
 
