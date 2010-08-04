@@ -50,5 +50,7 @@
 			:depends-on ("cl-kyoto-cabinet-package"))
 		 (:file "kyoto-cabinet"
 			:depends-on ("cl-kyoto-cabinet-package" "kyoto-cabinet-ffi"))
+		 (:file "kyoto-cabinet-dbm"
+			:depends-on ("cl-kyoto-cabinet-package" "kyoto-cabinet" "kyoto-cabinet-ffi"))
 		 ))
 
