@@ -1,4 +1,4 @@
-(defpackage :kyoto-cabinet-ffi
+(defpackage #:kyoto-cabinet-ffi
   (:use #:common-lisp #:cffi)
   (:export :kcdbnew
 	   :kcdbopen
@@ -12,20 +12,13 @@
 	   :kcdbset
 	   :kcdbadd
 	   :kcdbget
-	   
-	   :KCOREADER
-	   :KCOWRITER
-	   :KCOCREATE
-	   :KCOTRUNCATE
-	   :KCOAUTOTRAN
-	   :KCOAUTOSYNC
-	   :KCONOLOCK
-	   :KCOTRYLOCK
-	   :KCONOREPAIR)
+
+	   :dbm-open-flags)
+  
   (:documentation "CFFI interface to Kyoto Cabinet functions. The
   original C function names are preserved."))
 
-(defpackage :kyoto-cabinet
+(defpackage #:kyoto-cabinet
   (:use #:common-lisp #:cffi #:kyoto-cabinet-ffi)
   (:nicknames #:kc)
   (:export)
