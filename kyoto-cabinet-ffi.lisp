@@ -62,29 +62,31 @@
 (cffi:defcunion KCDB
 	(db :pointer))
 
-(defanonenum 
-	KCESUCCESS
-	KCENOIMPL
-	KCEINVALID
-	KCENOFILE
-	KCENOPERM
-	KCEBROKEN
-	KCEDUPREC
-	KCENOREC
-	KCELOGIC
-	KCESYSTEM
-	(KCEMISC #.15))
+(defbitfield dbm-open-flags
+  :success
+  :noimpl
+  :invalid
+  :nofile
+  :noperm
+  :broken
+  :duprec
+  :norec
+  :logic
+  :system)
 
-(defanonenum 
-	(KCOREADER #.(cl:ash 1 0))
-	(KCOWRITER #.(cl:ash 1 1))
-	(KCOCREATE #.(cl:ash 1 2))
-	(KCOTRUNCATE #.(cl:ash 1 3))
-	(KCOAUTOTRAN #.(cl:ash 1 4))
-	(KCOAUTOSYNC #.(cl:ash 1 5))
-	(KCONOLOCK #.(cl:ash 1 6))
-	(KCOTRYLOCK #.(cl:ash 1 7))
-	(KCONOREPAIR #.(cl:ash 1 8)))
+(defanonenum
+  (kcemisc #.15))
+
+(defbitfield dbm-open-flags
+  :read
+  :write
+  :create
+  :truncate
+  :autotran
+  :autosync
+  :nolock
+  :trylock
+  :norepair)
 
 (cffi:defcvar ("KCVERSION" KCVERSION)
  :string)
@@ -136,15 +138,38 @@
 (cffi:defcfun ("kcecodename" kcecodename) :string
   (code :pointer))
 
+
+
 (cffi:defcfun ("kcdbnew" kcdbnew) :pointer)
+
+(cffi:defcfun ("kcdbopen" kcdbopen) :boolean
+  (db :pointer)
+  (path :string)
+  (mode dbm-open-flags))
 
 (cffi:defcfun ("kcdbdel" kcdbdel) :void
   (db :pointer))
 
-(cffi:defcfun ("kcdbopen" kcdbopen) :pointer
+(cffi:defcfun ("kcdbset" kcdbset) :boolean
   (db :pointer)
-  (path :string)
-  (mode :pointer))
+  (kbuf :string)
+  (ksiz :uint32)
+  (vbuf :string)
+  (vsiz :uint32))
+
+(cffi:defcfun ("kcdbadd" kcdbadd) :boolean
+  (db :pointer)
+  (kbuf :string)
+  (ksiz :uint32)
+  (vbuf :string)
+  (vsiz :uint32))
+
+(cffi:defcfun ("kcdbget" kcdbget) :pointer
+  (db :pointer)
+  (kbuf :string)
+  (ksiz :uint32)
+  (sp :pointer))
+
 
 (cffi:defcfun ("kcdbclose" kcdbclose) :pointer
   (db :pointer))
@@ -170,19 +195,7 @@
   (opq :pointer)
   (writable :pointer))
 
-(cffi:defcfun ("kcdbset" kcdbset) :pointer
-  (db :pointer)
-  (kbuf :string)
-  (ksiz :pointer)
-  (vbuf :string)
-  (vsiz :pointer))
 
-(cffi:defcfun ("kcdbadd" kcdbadd) :pointer
-  (db :pointer)
-  (kbuf :string)
-  (ksiz :pointer)
-  (vbuf :string)
-  (vsiz :pointer))
 
 (cffi:defcfun ("kcdbappend" kcdbappend) :pointer
   (db :pointer)
@@ -217,11 +230,7 @@
   (kbuf :string)
   (ksiz :pointer))
 
-(cffi:defcfun ("kcdbget" kcdbget) :string
-  (db :pointer)
-  (kbuf :string)
-  (ksiz :pointer)
-  (sp :pointer))
+
 
 (cffi:defcfun ("kcdbgetbuf" kcdbgetbuf) :pointer
   (db :pointer)
@@ -245,11 +254,11 @@
 
 (cffi:defcfun ("kcdbbegintran" kcdbbegintran) :pointer
   (db :pointer)
-  (hard :pointer))
+  (hard :boolean))
 
 (cffi:defcfun ("kcdbbegintrantry" kcdbbegintrantry) :pointer
   (db :pointer)
-  (hard :pointer))
+  (hard :boolean))
 
 (cffi:defcfun ("kcdbendtran" kcdbendtran) :pointer
   (db :pointer)
