@@ -1,4 +1,4 @@
-(in-package :kyoto-cabinet)
+(in-package #:kyoto-cabinet)
 
 (defmethod initialize-instance :after ((db kc-dbm) &key)
   (with-slots (ptr)
@@ -31,7 +31,7 @@
     (check-open-mode mode)
     (unless (kcdbopen db-ptr filename mode) ; opens db by side-effect
       (let* ((code (kcdbecode db-ptr))
-             (msg (kcdbemsg code)))
+             (msg (kcdbemsg db-ptr)))
         (kcdbdel db-ptr) ; clean up on error
         (error 'dbm-error :error-code code :error-msg msg))))
   db)
