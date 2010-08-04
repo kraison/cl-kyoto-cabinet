@@ -62,7 +62,7 @@
 (cffi:defcunion KCDB
 	(db :pointer))
 
-(defbitfield dbm-open-flags
+(defbitfield dbm-return-flags
   :success
   :noimpl
   :invalid
@@ -72,9 +72,7 @@
   :duprec
   :norec
   :logic
-  :system)
-
-(defanonenum
+  :system
   (kcemisc #.15))
 
 (defbitfield dbm-open-flags
@@ -174,7 +172,7 @@
 (cffi:defcfun ("kcdbclose" kcdbclose) :pointer
   (db :pointer))
 
-(cffi:defcfun ("kcdbecode" kcdbecode) :pointer
+(cffi:defcfun ("kcdbecode" kcdbecode) :int
   (db :pointer))
 
 (cffi:defcfun ("kcdbemsg" kcdbemsg) :string

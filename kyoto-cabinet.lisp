@@ -8,6 +8,9 @@
   "The 64bit built-in DBM key type."
   '(signed-byte 64))
 
+(deftype octet ()
+  '(unsigned-byte 8))
+
 (defparameter *in-transaction-p* nil
   "Bound when in a transaction.")
 
@@ -106,7 +109,7 @@ Returns:
 (defgeneric dbm-abort (db)
   (:documentation "Aborts a transaction with DB."))
 
-(defgeneric dbm-put (db key value &key mode)
+(defgeneric dbm-put (db key value &key overwrite-if-exists)
   (:documentation "Inserts KEY and VALUE into DB. MODE varies with DB
 class.
 
@@ -382,6 +385,43 @@ allocate a foreign string that is not null-terminated."
             (maybe-raise-error db "(key ~a)" key)
           (copy-foreign-value value-ptr size-ptr))))))
 
+(defun get-octets->octets (db key fn)
+  "Returns a value from DB under KEY using FN where the key and value
+are octet vectors."
+  (declare (optimize (speed 3)))
+  (declare (type (simple-array octet) key)
+           (type function fn))
+  (let ((key-len (length key)))
+    (with-foreign-object (key-ptr :unsigned-char key-len)
+      (loop
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+      (with-foreign-object (size-ptr :int)
+	(with-string-value (value-ptr (funcall fn (ptr-of db)
+					       key-ptr key-len size-ptr))
+	  (if (null-pointer-p value-ptr)
+	      (maybe-raise-error db "(key ~a)" key)
+	      (copy-foreign-value value-ptr size-ptr)))))))
+
+(defun get-octets->string (db key fn)
+  "Returns a value from DB under KEY using FN where the key is a
+vector of octets and value is a string."
+  (declare (optimize (speed 3)))
+  (declare (type (simple-array octet) key)
+           (type function fn))
+  (let ((key-len (length key)))
+    (with-foreign-object (key-ptr :unsigned-char key-len)
+      (loop
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+      (with-foreign-object (size-ptr :int)
+	(with-string-value (value-ptr (funcall fn (ptr-of db)
+					       key-ptr key-len size-ptr))
+	  (if (null-pointer-p value-ptr)
+	      (maybe-raise-error db "(key ~a)" key)
+	      (foreign-string-to-lisp value-ptr
+				      :count (mem-ref size-ptr :int))))))))
+
 (defun get-int32->string (db key fn)
   "Returns a value from DB under KEY using FN where the key is a
 32-but integer and the value a string."
@@ -421,7 +461,7 @@ allocate a foreign string that is not null-terminated."
 are strings."
   (declare (optimize (speed 3)))
   (declare (type function fn))
-  (or (funcall fn (ptr-of db) key value)
+  (or (funcall fn (ptr-of db) key (length key) value (length value))
       (maybe-raise-error db "(key ~a) (value ~a)" key value)))
 
 (defun put-string->octets (db key value fn)
@@ -526,3 +566,8 @@ integer."
        for i from 0 below size
        do (setf (aref value i) (mem-aref value-ptr :unsigned-char i))
        finally (return value))))
+
+(defun put-method-from (&optional (overwrite-if-exists NIL))
+  (if overwrite-if-exists
+      #'kcdbset
+      #'kcdbadd))
