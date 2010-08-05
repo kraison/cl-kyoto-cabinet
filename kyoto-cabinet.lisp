@@ -46,14 +46,21 @@
   (:documentation "A KC database iterator, the superclass of both B+
 tree cursors and hash iterators."))
 
-(defclass bdb-iterator (kc-iterator)
-  ()
-  (:documentation "A B+ tree database cursor."))
 
-(defclass hdb-iterator (kc-iterator)
-  ((next-key :accessor next-key-of)
-   (key-size :accessor key-size-of))
-  (:documentation "A hash database iterator."))
+
+(defgeneric raise-error (db &optional message &rest message-arguments)
+  (:documentation "Raises a {define-condition dbm-error} with
+MESSAGE. MESSAGE may be a format template, in which case the rest of
+the arguments are taken to be format arguments for that template. The
+error code and TC error message are automatically obtained from the DB
+handle."))
+
+(defgeneric maybe-raise-error (db &optional message &rest message-arguments)
+  (:documentation "Checks the DB handle for any error reported by TC
+and raises a {define-condition dbm-error} if one has occurred by
+calling {defun raise-error} ."))
+
+
 
 (defgeneric dbm-open (db filespec &rest mode)
   (:documentation "Opens a new, or existing KC database.
@@ -106,10 +113,11 @@ Returns:
 (defgeneric dbm-commit (db)
   (:documentation "Commits a transaction with DB."))
 
-(defgeneric dbm-abort (db)
-  (:documentation "Aborts a transaction with DB."))
+(defgeneric dbm-rollback (db)
+  (:documentation "Rolls back a transaction with DB."))
 
-(defgeneric dbm-put (db key value &key overwrite-if-exists)
+
+(defgeneric dbm-put (db key value &key mode)
   (:documentation "Inserts KEY and VALUE into DB. MODE varies with DB
 class.
 
@@ -272,18 +280,6 @@ The keyword arguments for hash databases are:
 (defgeneric set-comparator (db fn)
   (:documentation "Sets the DB comparator function to that given by
 symbol FN."))
-
-(defgeneric raise-error (db &optional message &rest message-arguments)
-  (:documentation "Raises a {define-condition dbm-error} with
-MESSAGE. MESSAGE may be a format template, in which case the rest of
-the arguments are taken to be format arguments for that template. The
-error code and TC error message are automatically obtained from the DB
-handle."))
-
-(defgeneric maybe-raise-error (db &optional message &rest message-arguments)
-  (:documentation "Checks the DB handle for any error reported by TC
-and raises a {define-condition dbm-error} if one has occurred by
-calling {defun raise-error} ."))
 
 (defmacro with-database ((var filespec type &rest mode) &body body)
   "Evaluates BODY with VAR bound to an open database.
@@ -567,7 +563,7 @@ integer."
        do (setf (aref value i) (mem-aref value-ptr :unsigned-char i))
        finally (return value))))
 
-(defun put-method-from (&optional (overwrite-if-exists NIL))
-  (if overwrite-if-exists
-      #'kcdbset
-      #'kcdbadd))
+(defgeneric put-method-for (mode)
+  (:method ((mode (eql :replace))) #'kcdbset)
+  (:method ((mode (eql :keep))) #'kcdbadd)
+  (:method ((mode (eql :concat))) #'kcdbappend))

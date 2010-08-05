@@ -11,9 +11,11 @@
 	   :kcdbendtran
 	   :kcdbset
 	   :kcdbadd
+	   :kcdbappend
 	   :kcdbget
 
-	   :dbm-open-flags)
+	   :dbm-open-flags
+	   :dbm-return-values)
   
   (:documentation "CFFI interface to Kyoto Cabinet functions. The
   original C function names are preserved."))
