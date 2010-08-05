@@ -8,7 +8,7 @@
 (defmethod raise-error ((db kc-dbm) &optional (message "")
 			&rest message-arguments)
   (let* ((code (kcdbecode (ptr-of db)))
-	 (msg (kcdbemsg code)))
+	 (msg (kcdbemsg (ptr-of db))))
     (error 'dbm-error :error-code code :error-msg msg
 	   :text (apply #'format nil message message-arguments))))
 
@@ -16,10 +16,13 @@
 (defmethod maybe-raise-error ((db kc-dbm) &optional message
 			      &rest message-arguments)
   (let ((ecode (kcdbecode (ptr-of db))))
-    (cond ((= (foreign-bitfield-value 'dbm-return-flags '(:success))
+    (cond ((= (foreign-enum-value 'dbm-return-values :success)
 	      ecode)
 	   t)
-	  ((= (foreign-bitfield-value 'dbm-return-flags '(:norec))
+	  ((= (foreign-enum-value 'dbm-return-values :norec)
+	      ecode)
+	   nil)
+	  ((= (foreign-enum-value 'dbm-return-values :duprec)
 	      ecode)
 	   nil)
 	  (t
@@ -51,30 +54,30 @@
 (defmethod dbm-commit ((db kc-dbm))
   (kcdbendtran (ptr-of db) T))
 
-(defmethod dbm-rollback ((db kc-dbm) commit)
+(defmethod dbm-rollback ((db kc-dbm))
   (kcdbendtran (ptr-of db) NIL))
 
 
 ;; Define overloaded put methods
 
-(defmethod dbm-put ((db kc-dbm) (key string) (value string) &key (overwrite-if-exists NIL))
-  (let ((func (put-method-from overwrite-if-exists)))
+(defmethod dbm-put ((db kc-dbm) (key string) (value string) &key (mode :replace))
+  (let ((func (put-method-for mode)))
 	(put-string->string db key value func)))
 
-(defmethod dbm-put ((db kc-dbm) (key string) (value vector) &key (overwrite-if-exists NIL))
-  (let ((func (put-method-from overwrite-if-exists)))
+(defmethod dbm-put ((db kc-dbm) (key string) (value vector) &key (mode :replace))
+  (let ((func (put-method-for mode)))
     (put-string->octets db key value func)))
 
-(defmethod dbm-put ((db kc-dbm) (key vector) (value vector) &key (overwrite-if-exists NIL))
-  (let ((func (put-method-from overwrite-if-exists)))
+(defmethod dbm-put ((db kc-dbm) (key vector) (value vector) &key (mode :replace))
+  (let ((func (put-method-for mode)))
     (put-octets->octets db key value func)))
 
-(defmethod dbm-put ((db kc-dbm) (key integer) (value string) &key (overwrite-if-exists NIL))
-  (let ((func (put-method-from overwrite-if-exists)))
+(defmethod dbm-put ((db kc-dbm) (key integer) (value string) &key (mode :replace))
+  (let ((func (put-method-for mode)))
     (put-int32->string db key value func)))
 
-(defmethod dbm-put ((db kc-dbm) (key integer) (value vector) &key (overwrite-if-exists NIL))
-  (let ((func (put-method-from overwrite-if-exists)))
+(defmethod dbm-put ((db kc-dbm) (key integer) (value vector) &key (mode :replace))
+  (let ((func (put-method-for mode)))
     (put-int32->octets db key value func)))
 
 

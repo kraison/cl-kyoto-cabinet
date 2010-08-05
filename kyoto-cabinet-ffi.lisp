@@ -62,7 +62,7 @@
 (cffi:defcunion KCDB
 	(db :pointer))
 
-(defbitfield dbm-return-flags
+(defcenum dbm-return-values
   :success
   :noimpl
   :invalid
@@ -73,7 +73,7 @@
   :norec
   :logic
   :system
-  (kcemisc #.15))
+  (:kcemisc #.15))
 
 (defbitfield dbm-open-flags
   :read
@@ -162,6 +162,14 @@
   (vbuf :string)
   (vsiz :uint32))
 
+(cffi:defcfun ("kcdbappend" kcdbappend) :boolean
+  (db :pointer)
+  (kbuf :string)
+  (ksiz :uint32)
+  (vbuf :string)
+  (vsiz :uint32))
+
+
 (cffi:defcfun ("kcdbget" kcdbget) :pointer
   (db :pointer)
   (kbuf :string)
@@ -193,14 +201,6 @@
   (opq :pointer)
   (writable :pointer))
 
-
-
-(cffi:defcfun ("kcdbappend" kcdbappend) :pointer
-  (db :pointer)
-  (kbuf :string)
-  (ksiz :pointer)
-  (vbuf :string)
-  (vsiz :pointer))
 
 (cffi:defcfun ("kcdbincrint" kcdbincrint) :pointer
   (db :pointer)
