@@ -596,4 +596,8 @@ integer."
   (:method ((type (eql :string)) what-ptr)
     (foreign-string-to-lisp what-ptr))
   (:method ((type (eql :integer)) what-ptr)
-    (convert-from-foreign what-ptr :int32)))
+    (mem-aref what-ptr :int32)))
+
+
+(defun make-octet-vector (&rest body)
+  (make-array (length body) :initial-contents body :element-type '(unsigned-byte 8)))

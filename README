@@ -1,6 +1,6 @@
 (in-package :kyoto-cabinet)
 (defparameter *db* (make-instance 'kc-dbm))
-(dbm-open *db* "/tmp/test_today.kch" :create :write)
+(dbm-open *db* "/tmp/hello.kch" :create :write)
 
 (dbm-put *db* "Ilya" "Sterin" :mode :keep)
 (dbm-get *db* "Ilya")
@@ -12,5 +12,10 @@
 
 (defparameter *iter* (iter-open *db*))
 (iter-first *iter*)
-(multiple-value-bind (key val) (iter-item *iter*))
 (multiple-value-bind (key val) (iter-item *iter*) (list key val))
+(iter-next *iter*)
+
+(dbm-put *db* 123 (make-array 2 :initial-contents '(75 76) :element-type '(unsigned-byte 8)) :mode :replace)
+(dbm-put *db* 123 (make-octet-vector 100 101) :mode :replace)
+
+(multiple-value-bind (key val) (iter-item *iter* :key-type :integer) (list key val))
