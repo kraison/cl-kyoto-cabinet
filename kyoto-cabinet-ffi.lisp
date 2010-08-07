@@ -137,7 +137,6 @@
   (code :pointer))
 
 
-
 (cffi:defcfun ("kcdbnew" kcdbnew) :pointer)
 
 (cffi:defcfun ("kcdbopen" kcdbopen) :boolean
@@ -199,7 +198,7 @@
   (db :pointer)
   (fullproc :pointer)
   (opq :pointer)
-  (writable :pointer))
+  (writable :boolean))
 
 
 (cffi:defcfun ("kcdbincrint" kcdbincrint) :pointer
@@ -223,12 +222,10 @@
   (ovbuf :string)
   (ovsiz :pointer))
 
-(cffi:defcfun ("kcdbremove" kcdbremove) :pointer
+(cffi:defcfun ("kcdbremove" kcdbremove) :boolean
   (db :pointer)
   (kbuf :string)
-  (ksiz :pointer))
-
-
+  (ksiz :uint32))
 
 (cffi:defcfun ("kcdbgetbuf" kcdbgetbuf) :pointer
   (db :pointer)
@@ -319,9 +316,9 @@
   (ksp :pointer)
   (vbp :pointer)
   (vsp :pointer)
-  (step :pointer))
+  (step :boolean))
 
-(cffi:defcfun ("kccurjump" kccurjump) :pointer
+(cffi:defcfun ("kccurjump" kccurjump) :boolean
   (cur :pointer))
 
 (cffi:defcfun ("kccurjumpkey" kccurjumpkey) :pointer
@@ -329,7 +326,7 @@
   (kbuf :string)
   (ksiz :pointer))
 
-(cffi:defcfun ("kccurstep" kccurstep) :pointer
+(cffi:defcfun ("kccurstep" kccurstep) :boolean
   (cur :pointer))
 
 (cffi:defcfun ("kccurdb" kccurdb) :pointer
@@ -340,5 +337,4 @@
 
 (cffi:defcfun ("kccuremsg" kccuremsg) :string
   (cur :pointer))
-
-
+  
