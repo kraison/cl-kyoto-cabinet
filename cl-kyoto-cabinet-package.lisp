@@ -13,6 +13,16 @@
 	   :kcdbadd
 	   :kcdbappend
 	   :kcdbget
+	   :kcdbremove
+
+	   :kcdbcursor
+	   :kccurdel
+	   :kccurjump
+	   :kccurstep
+	   :kccurget
+	   :kccurkey
+	   :kccurvalue
+	   :kccurdb
 
 	   :dbm-open-flags
 	   :dbm-return-values)

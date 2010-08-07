@@ -155,16 +155,34 @@ treated. :STRING indicates that the value should be converted to a
 Lisp string, while :OCTETS indicates that the byte vector should be
 returned."))
 
-(defgeneric dbm-rem (db key &key remove-dups)
+(defgeneric dbm-rem (db key)
   (:documentation "Removes the value under KEY in DB. If REMOVE-DUPS
 is T, duplicate values will be removed from a B+ tree database."))
+
+
+;;; Iterator based methods below
+
+(defgeneric iter-item (db)
+  (:documentation "Returns the current item in the iterator.  ** DOES NOT advance the cursor **"))
+
+(defgeneric iter-iterate (db fn)
+  (:documentation "Iterates through all records and calls function fn for each record.
+
+Arguments:
+
+- db (object): A KC dbm object.
+- fn (function): A callback function
+
+Returns:
+- Boolean representing true for success or false for failure."))
+
 
 (defgeneric iter-open (db)
   (:documentation "Opens an iterator on DB.
 
 Arguments:
 
-- db (object): A TC dbm object.
+- db (object): A KC dbm object.
 
 Returns:
  - A TC iterator object."))
@@ -526,32 +544,37 @@ integer and the value is an octet vector."
       (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
         (maybe-raise-error db "(key ~a) (value ~a)" key value)))))
 
-(defun rem-string->value (db key fn)
-  "Removes value from DB under KEY using FN where the key is a
+(defun rem-string->value (db key)
+  "Removes value from DB under KEY where the key is a
 string."
   (declare (optimize (speed 3)))
   (declare (type function fn))
-  (or (funcall fn (ptr-of db) key)
-      (maybe-raise-error db "(key ~a)" key)))
+  (with-foreign-string ((key-ptr key-len) key)
+    (or (kcdbremove (ptr-of db) key key-len)
+	(maybe-raise-error db "(key ~a)" key))))
 
-(defun rem-string->duplicates (db key fn)
-  "Removes all values from DB under KEY using FN where the key is a
-string."
-  (declare (optimize (speed 3)))
-  (declare (type function fn))
-  (with-foreign-string ((key-ptr key-len) key :null-terminated-p nil)
-    (or (funcall fn (ptr-of db) key key-len)
-        (maybe-raise-error db "(key ~a)" key))))
-
-(defun rem-int32->value (db key fn)
-  "Removes value from DB under KEY using FN where the key is a 32-bit
+(defun rem-int32->value (db key)
+  "Removes value from DB under KEY where the key is a 32-bit
 integer."
   (declare (optimize (speed 3)))
   (declare (type function fn))
   (with-foreign-object (key-ptr :int32)
     (setf (mem-ref key-ptr :int32) key)
-    (or (funcall fn (ptr-of db) key-ptr (foreign-type-size :int32))
-        (maybe-raise-error db "(key ~a)" key))))
+    (or (kcdbremove (ptr-of db) key-ptr (foreign-type-size :int32))
+	(maybe-raise-error db "(key ~a)" key))))
+
+(defun rem-octets->value (db key)
+  "Removes value from DB under KEY where the key is a octet vector"
+  (declare (optimize (speed 3)))
+  (declare (type function fn))
+  (let ((key-len (length key)))
+    (with-foreign-object (key-ptr :unsigned-char key-len)
+      (loop
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+      (or (kcdbremove (ptr-of db) key-ptr key-len)
+	  (maybe-raise-error db "(key ~a)" key)))))
+
 
 (declaim (inline copy-foreign-value))
 (defun copy-foreign-value (value-ptr size-ptr)

@@ -1,9 +1,13 @@
 (in-package #:kyoto-cabinet)
 
 (defmethod initialize-instance :after ((db kc-dbm) &key)
-  (with-slots (ptr)
-      db
+  (with-slots (ptr) db
     (setf ptr (kcdbnew))))
+
+(defmethod initialize-instance :after ((iter kc-iterator) &key)
+  (with-slots (ptr) iter
+    (setf ptr iter)))
+
 
 (defmethod raise-error ((db kc-dbm) &optional (message "")
 			&rest message-arguments)
@@ -100,3 +104,59 @@
     (ecase type
       (:string (get-octets->string db key fn))
       (:octets (get-octets->octets db key fn)))))
+
+
+;; Define overloaded remove methods
+
+(defmethod dbm-remove ((db kc-dbm) (key string))
+  (rem-string->value db key))
+
+(defmethod dbm-remove ((db kc-dbm) (key integer))
+  (rem-int32->value  db key))
+
+(defmethod dbm-remove ((db kc-dbm) (key vector))
+  (rem-octets->value  db key))
+
+
+;; Define iterator methods below
+
+(defmethod iter-open ((db kc-dbm))
+  (let ((iterator (make-instance 'kc-iterator)))
+    (with-slots ((iter-ptr ptr)) iterator
+      (with-slots ((db-ptr ptr)) db
+	(setf iter-ptr (kcdbcursor db-ptr))))
+    iterator))
+
+
+(defmethod iter-item ((iter kc-iterator))
+  (let ((key-size (foreign-alloc :pointer))
+	(value-size (foreign-alloc :pointer))
+	(value-ptr (foreign-alloc :pointer)))
+    (with-string-value (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL))
+      (foreign-free key-size)
+      (foreign-free value-size)
+      (format t "KEY: ~a~%" key-ptr)
+      (format t "VALUE: ~a~%" (foreign-string-to-lisp value-ptr))
+      (let ((key (foreign-string-to-lisp key-ptr)) (value (foreign-string-to-lisp value-ptr)))
+	(foreign-free key-ptr)
+	(foreign-free value-ptr)
+	(if (null-pointer-p key-ptr)
+	    (maybe-raise-error (kccurdb (ptr-of iter)))
+	    (list key value))))))
+
+(defmethod iter-first ((iter kc-iterator))
+  (kccurjump (ptr-of iter)))
+
+(defmethod iter-next ((iter kc-iterator))
+  (kccurstep (ptr-of iter)))
+
+;; (defmethod iter-key ((iter kc-iterator))
+  
+
+;;(defmethod iter-iterate ((iter kc-iterator) (fn function))
+;;  (iter-first iter)
+;;  (loop while (iter-next iter) do
+;;       (funcall fn 
+  
+
+
