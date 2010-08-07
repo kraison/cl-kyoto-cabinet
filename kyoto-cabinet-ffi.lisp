@@ -149,23 +149,23 @@
 
 (cffi:defcfun ("kcdbset" kcdbset) :boolean
   (db :pointer)
-  (kbuf :string)
+  (kbuf :pointer)
   (ksiz :uint32)
-  (vbuf :string)
+  (vbuf :pointer)
   (vsiz :uint32))
 
 (cffi:defcfun ("kcdbadd" kcdbadd) :boolean
   (db :pointer)
-  (kbuf :string)
+  (kbuf :pointer)
   (ksiz :uint32)
-  (vbuf :string)
+  (vbuf :pointer)
   (vsiz :uint32))
 
 (cffi:defcfun ("kcdbappend" kcdbappend) :boolean
   (db :pointer)
-  (kbuf :string)
+  (kbuf :pointer)
   (ksiz :uint32)
-  (vbuf :string)
+  (vbuf :pointer)
   (vsiz :uint32))
 
 
@@ -234,7 +234,7 @@
   (vbuf :string)
   (max :pointer))
 
-(cffi:defcfun ("kcdbclear" kcdbclear) :pointer
+(cffi:defcfun ("kcdbclear" kcdbclear) :boolean
   (db :pointer))
 
 (cffi:defcfun ("kcdbsync" kcdbsync) :pointer
@@ -311,7 +311,7 @@
   (sp :pointer)
   (step :pointer))
 
-(cffi:defcfun ("kccurget" kccurget) :string
+(cffi:defcfun ("kccurget" kccurget) :pointer
   (cur :pointer)
   (ksp :pointer)
   (vbp :pointer)

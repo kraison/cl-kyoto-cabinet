@@ -1,8 +1,10 @@
 (in-package #:kyoto-cabinet)
 
-(defmethod initialize-instance :after ((db kc-dbm) &key)
+(defmethod initialize-instance :after ((db kc-dbm) &key instance)     
   (with-slots (ptr) db
-    (setf ptr (kcdbnew))))
+    (if (null instance)
+	(setf ptr (kcdbnew))
+	(setf ptr instance))))
 
 (defmethod initialize-instance :after ((iter kc-iterator) &key)
   (with-slots (ptr) iter
@@ -17,10 +19,23 @@
 	   :text (apply #'format nil message message-arguments))))
 
 
+(defmethod raise-error ((iter kc-iterator) &optional (message "")
+			&rest message-arguments)
+  (raise-error (make-instance 'kc-dbm :instance (kccurdb (ptr-of iter))) message message-arguments))
+
 (defmethod maybe-raise-error ((db kc-dbm) &optional message
 			      &rest message-arguments)
   (let ((ecode (kcdbecode (ptr-of db))))
-    (cond ((= (foreign-enum-value 'dbm-return-values :success)
+    (maybe-raise-error-with-ecode db ecode message message-arguments)))
+
+(defmethod maybe-raise-error ((iter kc-iterator) &optional message
+			      &rest message-arguments)
+  (let ((ecode (kcdbecode (kccurdb (ptr-of iter)))))
+    (maybe-raise-error-with-ecode iter ecode message message-arguments)))
+	   
+(defun maybe-raise-error-with-ecode (what ecode &optional message
+				     &rest message-arguments)
+   (cond ((= (foreign-enum-value 'dbm-return-values :success)
 	      ecode)
 	   t)
 	  ((= (foreign-enum-value 'dbm-return-values :norec)
@@ -30,8 +45,7 @@
 	      ecode)
 	   nil)
 	  (t
-	   (apply #'raise-error db message message-arguments)))))
-  
+	   (apply #'raise-error what message message-arguments))))
 
 (defmethod dbm-open ((db kc-dbm) filename &rest mode)
   (let ((db-ptr (ptr-of db)))
@@ -128,35 +142,24 @@
     iterator))
 
 
-(defmethod iter-item ((iter kc-iterator))
+(defmethod iter-item ((iter kc-iterator) &key (key-type :string) (value-type :string))
   (let ((key-size (foreign-alloc :pointer))
 	(value-size (foreign-alloc :pointer))
 	(value-ptr (foreign-alloc :pointer)))
     (with-string-value (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL))
       (foreign-free key-size)
       (foreign-free value-size)
-      (format t "KEY: ~a~%" key-ptr)
-      (format t "VALUE: ~a~%" (foreign-string-to-lisp value-ptr))
-      (let ((key (foreign-string-to-lisp key-ptr)) (value (foreign-string-to-lisp value-ptr)))
-	(foreign-free key-ptr)
-	(foreign-free value-ptr)
-	(if (null-pointer-p key-ptr)
-	    (maybe-raise-error (kccurdb (ptr-of iter)))
-	    (list key value))))))
+      (let ((key (convert-to key-type key-ptr)) (value (convert-to value-type (mem-ref value-ptr :pointer))))
+	(format t "KEY: ~a~%" key)
+	(format t "VALUE: ~a~%" value)
+	(if (null key)
+	    (progn
+	      (maybe-raise-error iter)
+	      ())
+	    (values key value))))))
 
 (defmethod iter-first ((iter kc-iterator))
   (kccurjump (ptr-of iter)))
 
 (defmethod iter-next ((iter kc-iterator))
   (kccurstep (ptr-of iter)))
-
-;; (defmethod iter-key ((iter kc-iterator))
-  
-
-;;(defmethod iter-iterate ((iter kc-iterator) (fn function))
-;;  (iter-first iter)
-;;  (loop while (iter-next iter) do
-;;       (funcall fn 
-  
-
-

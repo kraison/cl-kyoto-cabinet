@@ -162,7 +162,7 @@ is T, duplicate values will be removed from a B+ tree database."))
 
 ;;; Iterator based methods below
 
-(defgeneric iter-item (db)
+(defgeneric iter-item (db &key key-type value-type)
   (:documentation "Returns the current item in the iterator.  ** DOES NOT advance the cursor **"))
 
 (defgeneric iter-iterate (db fn)
@@ -522,7 +522,7 @@ integer and the value is a string."
   (let ((key-len (foreign-type-size :int32))
         (value-len (length value)))
     (with-foreign-object (key-ptr :int32)
-      (setf (mem-ref key-ptr :int32) key)
+      (setf (mem-ref key-ptr :int32) (convert-to-foreign key :int32))
       (with-foreign-string (value-ptr value)
         (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
             (maybe-raise-error db "(key ~a) (value ~a)" key value))))))
@@ -590,3 +590,10 @@ integer."
   (:method ((mode (eql :replace))) #'kcdbset)
   (:method ((mode (eql :keep))) #'kcdbadd)
   (:method ((mode (eql :concat))) #'kcdbappend))
+
+
+(defgeneric convert-to (type what-ptr)
+  (:method ((type (eql :string)) what-ptr)
+    (foreign-string-to-lisp what-ptr))
+  (:method ((type (eql :integer)) what-ptr)
+    (convert-from-foreign what-ptr :int32)))
