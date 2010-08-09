@@ -548,7 +548,6 @@ integer and the value is an octet vector."
   "Removes value from DB under KEY where the key is a
 string."
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (with-foreign-string ((key-ptr key-len) key)
     (or (kcdbremove (ptr-of db) key key-len)
 	(maybe-raise-error db "(key ~a)" key))))
@@ -557,7 +556,6 @@ string."
   "Removes value from DB under KEY where the key is a 32-bit
 integer."
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (with-foreign-object (key-ptr :int32)
     (setf (mem-ref key-ptr :int32) key)
     (or (kcdbremove (ptr-of db) key-ptr (foreign-type-size :int32))
@@ -566,7 +564,6 @@ integer."
 (defun rem-octets->value (db key)
   "Removes value from DB under KEY where the key is a octet vector"
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (let ((key-len (length key)))
     (with-foreign-object (key-ptr :unsigned-char key-len)
       (loop
