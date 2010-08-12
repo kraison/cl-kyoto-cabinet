@@ -156,7 +156,7 @@ treated. :STRING indicates that the value should be converted to a
 Lisp string, while :OCTETS indicates that the byte vector should be
 returned."))
 
-(defgeneric dbm-rem (db key)
+(defgeneric dbm-remove (db key)
   (:documentation "Removes the value under KEY in DB. If REMOVE-DUPS
 is T, duplicate values will be removed from a B+ tree database."))
 
@@ -467,7 +467,7 @@ key-ptr key-len size-ptr))
                  value-ptr (funcall fn (ptr-of db) key-ptr key-len size-ptr))
            (if (null-pointer-p value-ptr)
                (maybe-raise-error db "(key ~a)" key)
-             (copy-foreign-value value-ptr size-ptr)))
+	       (copy-foreign-value value-ptr size-ptr)))
       (when (and value-ptr (not (null-pointer-p value-ptr)))
         (foreign-free value-ptr)))))
 
@@ -596,7 +596,9 @@ do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
   (:method ((type (eql :string)) what-ptr)
     (foreign-string-to-lisp what-ptr))
   (:method ((type (eql :integer)) what-ptr)
-    (mem-aref what-ptr :int32)))
+    (mem-aref what-ptr :int32))
+  (:method ((type (eql :octets)) what-ptr)
+    (copy-foreign-value what-ptr (foreign-type-size what-ptr))))
 
 (defgeneric convert-from-lisp (type what)
   (:method ((type (eql :string)) what)
