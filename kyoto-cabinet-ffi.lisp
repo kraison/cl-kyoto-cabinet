@@ -32,7 +32,7 @@
                       ((cl:lower-case-p c)
                        (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
                       ((cl:digit-char-p c)
-                       (helper (cl:cdr lst) 'digit 
+                       (helper (cl:cdr lst) 'digit
                                (cl:case last
                                  ((upper lower) (cl:list* c #\- rest))
                                  (cl:t (cl:cons c rest)))))
@@ -60,7 +60,7 @@
 (use-foreign-library libkc)
 
 (cffi:defcunion KCDB
-	(db :pointer))
+(db :pointer))
 
 (defcenum dbm-return-values
   :success
@@ -96,7 +96,7 @@
  :string)
 
 (cffi:defcunion KCCUR
-	(cur :pointer))
+(cur :pointer))
 
 (cffi:defcfun ("kcmalloc" kcmalloc) :string
   (size :pointer))
@@ -247,17 +247,17 @@
   (db :pointer)
   (dest :string))
 
-(cffi:defcfun ("kcdbbegintran" kcdbbegintran) :pointer
+(cffi:defcfun ("kcdbbegintran" kcdbbegintran) :boolean
   (db :pointer)
   (hard :boolean))
 
-(cffi:defcfun ("kcdbbegintrantry" kcdbbegintrantry) :pointer
+(cffi:defcfun ("kcdbbegintrantry" kcdbbegintrantry) :boolean
   (db :pointer)
   (hard :boolean))
 
-(cffi:defcfun ("kcdbendtran" kcdbendtran) :pointer
+(cffi:defcfun ("kcdbendtran" kcdbendtran) :boolean
   (db :pointer)
-  (commit :pointer))
+  (commit :boolean))
 
 (cffi:defcfun ("kcdbdumpsnap" kcdbdumpsnap) :pointer
   (db :pointer)
@@ -337,4 +337,4 @@
 
 (cffi:defcfun ("kccuremsg" kccuremsg) :string
   (cur :pointer))
-  
+
