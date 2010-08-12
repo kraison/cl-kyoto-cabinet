@@ -247,17 +247,17 @@
   (db :pointer)
   (dest :string))
 
-(cffi:defcfun ("kcdbbegintran" kcdbbegintran) :pointer
+(cffi:defcfun ("kcdbbegintran" kcdbbegintran) :boolean
   (db :pointer)
   (hard :boolean))
 
-(cffi:defcfun ("kcdbbegintrantry" kcdbbegintrantry) :pointer
+(cffi:defcfun ("kcdbbegintrantry" kcdbbegintrantry) :boolean
   (db :pointer)
   (hard :boolean))
 
-(cffi:defcfun ("kcdbendtran" kcdbendtran) :pointer
+(cffi:defcfun ("kcdbendtran" kcdbendtran) :boolean
   (db :pointer)
-  (commit :pointer))
+  (commit :boolean))
 
 (cffi:defcfun ("kcdbdumpsnap" kcdbdumpsnap) :pointer
   (db :pointer)

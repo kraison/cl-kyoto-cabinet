@@ -14,6 +14,7 @@
 (defparameter *in-transaction-p* nil
   "Bound when in a transaction.")
 
+
 (define-condition dbm-error (error)
   ((error-code :initform nil
                :initarg :error-code
@@ -550,7 +551,6 @@ integer and the value is an octet vector."
   "Removes value from DB under KEY where the key is a
 string."
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (with-foreign-string ((key-ptr key-len) key)
     (or (kcdbremove (ptr-of db) key key-len)
 	(maybe-raise-error db "(key ~a)" key))))
@@ -559,7 +559,6 @@ string."
   "Removes value from DB under KEY where the key is a 32-bit
 integer."
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (with-foreign-object (key-ptr :int32)
     (setf (mem-ref key-ptr :int32) key)
     (or (kcdbremove (ptr-of db) key-ptr (foreign-type-size :int32))
@@ -568,7 +567,6 @@ integer."
 (defun rem-octets->value (db key)
   "Removes value from DB under KEY where the key is a octet vector"
   (declare (optimize (speed 3)))
-  (declare (type function fn))
   (let ((key-len (length key)))
     (with-foreign-object (key-ptr :unsigned-char key-len)
       (loop
@@ -606,14 +604,32 @@ integer."
   (:method ((type (eql :integer)) what)
     (convert-to-foreign what :int32))
   (:method ((type (eql :octets)) what)
-    (with-foreign-objects (what-ptr :unsigned-char what-len))
+    (with-foreign-object (what-ptr :unsigned-char)
       (loop
-         for i from 0 below what-len
+         for i from 0 below (length what)
          do (setf (mem-aref what-ptr :unsigned-char i) (aref what i)))
-      what-ptr))
+      what-ptr)))
     
-    
-
-
 (defun make-octet-vector (&rest body)
   (make-array (length body) :initial-contents body :element-type '(unsigned-byte 8)))
+
+(defmacro with-transaction ((db) &body body)
+  "Evaluates BODY in the context of a transaction on DB. If no
+transaction is in progress, a new one is started. If a transaction is
+already in progress, BODY is evaluated in its context. If an error
+occurs, the transaction will rollback, otherwise it will commit."
+  (let ((success (gensym)))
+    `(let ((,success nil))
+       (flet ((atomic-op ()
+                ,@body))
+         (if *in-transaction-p*
+             (atomic-op)
+             (unwind-protect
+                  (let ((*in-transaction-p* t))
+                    (prog2
+                        (dbm-begin ,db)
+                        (atomic-op)
+                      (setf ,success t)))
+               (if ,success
+                   (dbm-commit ,db)
+                   (dbm-rollback ,db))))))))
