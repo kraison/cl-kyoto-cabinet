@@ -101,7 +101,7 @@ Arguments:
 
 - db (object): A KC dbm object.
 
-Returns: 
+Returns:
 
 - NIL ."))
 
@@ -226,7 +226,7 @@ returned."))
 of :CURRENT , :BEFORE or :AFTER . Only effective for B+ tree
 databases."))
 
-(defgeneric iter-rem (iterator)
+(defgeneric iter-remove (iterator)
   (:documentation "Removed the record at the ITERATOR position and
 advances ITERATOR, if possible. Only effective for B+ tree
 databases."))

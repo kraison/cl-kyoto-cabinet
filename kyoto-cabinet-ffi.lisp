@@ -32,7 +32,7 @@
                       ((cl:lower-case-p c)
                        (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
                       ((cl:digit-char-p c)
-                       (helper (cl:cdr lst) 'digit 
+                       (helper (cl:cdr lst) 'digit
                                (cl:case last
                                  ((upper lower) (cl:list* c #\- rest))
                                  (cl:t (cl:cons c rest)))))
@@ -298,7 +298,7 @@
   (vsiz :pointer)
   (step :pointer))
 
-(cffi:defcfun ("kccurremove" kccurremove) :pointer
+(cffi:defcfun ("kccurremove" kccurremove) :boolean
   (cur :pointer))
 
 (cffi:defcfun ("kccurgetkey" kccurgetkey) :string
@@ -321,7 +321,7 @@
 (cffi:defcfun ("kccurjump" kccurjump) :boolean
   (cur :pointer))
 
-(cffi:defcfun ("kccurjumpkey" kccurjumpkey) :pointer
+(cffi:defcfun ("kccurjumpkey" kccurjumpkey) :boolean
   (cur :pointer)
   (kbuf :string)
   (ksiz :uint32))
