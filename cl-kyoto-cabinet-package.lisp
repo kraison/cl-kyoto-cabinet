@@ -54,7 +54,7 @@
    #:iter-last
    #:iter-prev
    #:iter-next
-   #:iter-jump
+   #:iter-go-to
    #:iter-put
    #:iter-rem
    #:iter-key
