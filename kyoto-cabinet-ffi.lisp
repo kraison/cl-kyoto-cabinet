@@ -60,7 +60,7 @@
 (use-foreign-library libkc)
 
 (cffi:defcunion KCDB
-(db :pointer))
+	(db :pointer))
 
 (defcenum dbm-return-values
   :success
@@ -96,7 +96,7 @@
  :string)
 
 (cffi:defcunion KCCUR
-(cur :pointer))
+	(cur :pointer))
 
 (cffi:defcfun ("kcmalloc" kcmalloc) :string
   (size :pointer))
@@ -298,7 +298,7 @@
   (vsiz :pointer)
   (step :pointer))
 
-(cffi:defcfun ("kccurremove" kccurremove) :pointer
+(cffi:defcfun ("kccurremove" kccurremove) :boolean
   (cur :pointer))
 
 (cffi:defcfun ("kccurgetkey" kccurgetkey) :string
@@ -321,7 +321,7 @@
 (cffi:defcfun ("kccurjump" kccurjump) :boolean
   (cur :pointer))
 
-(cffi:defcfun ("kccurjumpkey" kccurjumpkey) :pointer
+(cffi:defcfun ("kccurjumpkey" kccurjumpkey) :boolean
   (cur :pointer)
   (kbuf :string)
   (ksiz :uint32))
@@ -337,4 +337,4 @@
 
 (cffi:defcfun ("kccuremsg" kccuremsg) :string
   (cur :pointer))
-
+  

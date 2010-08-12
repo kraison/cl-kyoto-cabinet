@@ -24,6 +24,7 @@
 	   :kccurvalue
 	   :kccurdb
 	   :kccurjumpkey
+	   :kccurremove
 
 	   :dbm-open-flags
 	   :dbm-return-values)
@@ -43,8 +44,8 @@
    #:dbm-close
    #:dbm-begin
    #:dbm-commit
+   #:dbm-rollback
    #:dbm-delete
-   #:dbm-vanish
    #:dbm-put
    #:dbm-get
    #:dbm-remove
@@ -56,7 +57,7 @@
    #:iter-next
    #:iter-go-to
    #:iter-put
-   #:iter-rem
+   #:iter-remove
    #:iter-key
    #:iter-get
    #:iter-close

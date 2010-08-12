@@ -179,3 +179,6 @@
       (loop for i from 0 below key-len
 	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
     (kccurjumpkey (ptr-of iter) key-ptr key-len))))
+
+(defmethod iter-remove ((iter kc-iterator))
+  (kccurremove (ptr-of iter)))

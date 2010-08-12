@@ -164,7 +164,7 @@ is T, duplicate values will be removed from a B+ tree database."))
 ;;; Iterator based methods below
 
 (defgeneric iter-item (db &key key-type value-type)
-  (:documentation "Returns the current item in the iterator. ** DOES NOT advance the cursor **"))
+  (:documentation "Returns the current item in the iterator.  ** DOES NOT advance the cursor **"))
 
 (defgeneric iter-iterate (db fn)
   (:documentation "Iterates through all records and calls function fn for each record.
@@ -186,7 +186,7 @@ Arguments:
 - db (object): A KC dbm object.
 
 Returns:
-- A TC iterator object."))
+ - A TC iterator object."))
 
 (defgeneric iter-close (iterator)
   (:documentation "Closes ITERATOR. Only effective for B+ tree
@@ -226,7 +226,7 @@ returned."))
 of :CURRENT , :BEFORE or :AFTER . Only effective for B+ tree
 databases."))
 
-(defgeneric iter-rem (iterator)
+(defgeneric iter-remove (iterator)
   (:documentation "Removed the record at the ITERATOR position and
 advances ITERATOR, if possible. Only effective for B+ tree
 databases."))
@@ -278,7 +278,7 @@ In both cases the :OPTS value is a list of one or more of
 For example:
 
 ;;; (dbm-optimize db :leaf 512 :non-leaf 256 :bucket-size 100000000
-;;; :rec-align 4 :free-pool 10 :opts '(:large :deflate))"))
+;;;                  :rec-align 4 :free-pool 10 :opts '(:large :deflate))"))
 
 (defgeneric dbm-cache (db &rest args)
   (:documentation "Sets the caching parameters of DB. These are
@@ -312,7 +312,7 @@ Arguments:
 Rest:
 
 - mode (symbols): :READ :WRITE :CREATE :TRUNCATE
-:NOLOCK :NOBLOCK and :TSYNC
+                  :NOLOCK :NOBLOCK and :TSYNC
 
 See the TC documentation for the meaning of the mode arguments."
   `(let ((,var (make-instance ,type)))
@@ -383,8 +383,8 @@ are strings."
   (let ((p (foreign-alloc :uint32)))
      (with-string-value (value-ptr (funcall fn (ptr-of db) key (length key) p))
        (if (null-pointer-p value-ptr)
-(maybe-raise-error db "(key ~a)" key)
-(foreign-string-to-lisp value-ptr)))))
+	   (maybe-raise-error db "(key ~a)" key)
+	   (foreign-string-to-lisp value-ptr)))))
 
 (defun get-string->octets (db key fn)
   "Returns a value from DB under KEY using FN where the key is a
@@ -409,14 +409,14 @@ are octet vectors."
   (let ((key-len (length key)))
     (with-foreign-object (key-ptr :unsigned-char key-len)
       (loop
-for i from 0 below key-len
-do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
       (with-foreign-object (size-ptr :int)
-(with-string-value (value-ptr (funcall fn (ptr-of db)
-key-ptr key-len size-ptr))
-(if (null-pointer-p value-ptr)
-(maybe-raise-error db "(key ~a)" key)
-(copy-foreign-value value-ptr size-ptr)))))))
+	(with-string-value (value-ptr (funcall fn (ptr-of db)
+					       key-ptr key-len size-ptr))
+	  (if (null-pointer-p value-ptr)
+	      (maybe-raise-error db "(key ~a)" key)
+	      (copy-foreign-value value-ptr size-ptr)))))))
 
 (defun get-octets->string (db key fn)
   "Returns a value from DB under KEY using FN where the key is a
@@ -427,15 +427,15 @@ vector of octets and value is a string."
   (let ((key-len (length key)))
     (with-foreign-object (key-ptr :unsigned-char key-len)
       (loop
-for i from 0 below key-len
-do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
       (with-foreign-object (size-ptr :int)
-(with-string-value (value-ptr (funcall fn (ptr-of db)
-key-ptr key-len size-ptr))
-(if (null-pointer-p value-ptr)
-(maybe-raise-error db "(key ~a)" key)
-(foreign-string-to-lisp value-ptr
-:count (mem-ref size-ptr :int))))))))
+	(with-string-value (value-ptr (funcall fn (ptr-of db)
+					       key-ptr key-len size-ptr))
+	  (if (null-pointer-p value-ptr)
+	      (maybe-raise-error db "(key ~a)" key)
+	      (foreign-string-to-lisp value-ptr
+				      :count (mem-ref size-ptr :int))))))))
 
 (defun get-int32->string (db key fn)
   "Returns a value from DB under KEY using FN where the key is a
@@ -479,7 +479,7 @@ are strings."
   (with-foreign-string ((key-ptr key-len) key :null-terminated-p nil)
     (with-foreign-string ((value-ptr value-len) value :null-terminated-p nil)
       (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
-(maybe-raise-error db "(key ~a) (value ~a)" key value)))))
+	  (maybe-raise-error db "(key ~a) (value ~a)" key value)))))
 
 (defun put-string->octets (db key value fn)
   "Inserts VALUE into DB under KEY using FN where the key is a string
@@ -553,7 +553,7 @@ string."
   (declare (optimize (speed 3)))
   (with-foreign-string ((key-ptr key-len) key)
     (or (kcdbremove (ptr-of db) key key-len)
-(maybe-raise-error db "(key ~a)" key))))
+	(maybe-raise-error db "(key ~a)" key))))
 
 (defun rem-int32->value (db key)
   "Removes value from DB under KEY where the key is a 32-bit
@@ -562,7 +562,7 @@ integer."
   (with-foreign-object (key-ptr :int32)
     (setf (mem-ref key-ptr :int32) key)
     (or (kcdbremove (ptr-of db) key-ptr (foreign-type-size :int32))
-(maybe-raise-error db "(key ~a)" key))))
+	(maybe-raise-error db "(key ~a)" key))))
 
 (defun rem-octets->value (db key)
   "Removes value from DB under KEY where the key is a octet vector"
@@ -570,10 +570,10 @@ integer."
   (let ((key-len (length key)))
     (with-foreign-object (key-ptr :unsigned-char key-len)
       (loop
-for i from 0 below key-len
-do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+	 for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
       (or (kcdbremove (ptr-of db) key-ptr key-len)
-(maybe-raise-error db "(key ~a)" key)))))
+	  (maybe-raise-error db "(key ~a)" key)))))
 
 
 (declaim (inline copy-foreign-value))
@@ -635,4 +635,3 @@ occurs, the transaction will rollback, otherwise it will commit."
                (if ,success
                    (dbm-commit ,db)
                    (dbm-rollback ,db))))))))
-
