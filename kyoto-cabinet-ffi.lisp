@@ -324,7 +324,7 @@
 (cffi:defcfun ("kccurjumpkey" kccurjumpkey) :pointer
   (cur :pointer)
   (kbuf :string)
-  (ksiz :pointer))
+  (ksiz :uint32))
 
 (cffi:defcfun ("kccurstep" kccurstep) :boolean
   (cur :pointer))

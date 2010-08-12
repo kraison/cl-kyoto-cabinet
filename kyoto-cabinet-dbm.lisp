@@ -149,7 +149,7 @@
     (with-string-value (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL))
       (foreign-free key-size)
       (foreign-free value-size)
-      (let ((key (convert-to key-type key-ptr)) (value (convert-to value-type (mem-ref value-ptr :pointer))))
+      (let ((key (convert-to-lisp key-type key-ptr)) (value (convert-to-lisp value-type (mem-ref value-ptr :pointer))))
 	(format t "KEY: ~a~%" key)
 	(format t "VALUE: ~a~%" value)
 	(if (null key)
@@ -163,3 +163,19 @@
 
 (defmethod iter-next ((iter kc-iterator))
   (kccurstep (ptr-of iter)))
+
+(defmethod iter-go-to ((iter kc-iterator) (key string))
+  (with-foreign-string ((key-ptr key-len) key :null-terminated-p nil)
+    (kccurjumpkey (ptr-of iter) key-ptr key-len)))
+
+(defmethod iter-go-to ((iter kc-iterator) (key integer))
+  (with-foreign-object (key-ptr :int32)
+      (setf (mem-ref key-ptr :int32) key)
+      (kccurjumpkey (ptr-of iter) key-ptr (foreign-type-size :int32))))
+
+(defmethod iter-go-to ((iter kc-iterator) (key vector))
+  (let ((key-len (length key)))
+    (with-foreign-objects ((key-ptr :unsigned-char key-len))
+      (loop for i from 0 below key-len
+	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
+    (kccurjumpkey (ptr-of iter) key-ptr key-len))))
