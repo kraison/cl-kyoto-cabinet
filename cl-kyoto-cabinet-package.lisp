@@ -47,7 +47,7 @@
    #:dbm-vanish
    #:dbm-put
    #:dbm-get
-   #:dbm-rem
+   #:dbm-remove
    #:dbm-abort
    #:iter-open
    #:iter-first
