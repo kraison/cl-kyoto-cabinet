@@ -209,7 +209,7 @@ databases."))
   (:documentation "Moves ITERATOR to the next record and returns T, or
 NIL if already at the last record."))
 
-(defgeneric iter-jump (iterator key)
+(defgeneric iter-go-to (iterator key)
   (:documentation "Moves ITERATOR to the record at KEY. Only effective
 for B+ tree databases."))
 
@@ -475,8 +475,10 @@ vector of octets and value is a string."
 are strings."
   (declare (optimize (speed 3)))
   (declare (type function fn))
-  (or (funcall fn (ptr-of db) key (length key) value (length value))
-      (maybe-raise-error db "(key ~a) (value ~a)" key value)))
+  (with-foreign-string ((key-ptr key-len) key :null-terminated-p nil)
+    (with-foreign-string ((value-ptr value-len) value :null-terminated-p nil)
+      (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
+	  (maybe-raise-error db "(key ~a) (value ~a)" key value)))))
 
 (defun put-string->octets (db key value fn)
   "Inserts VALUE into DB under KEY using FN where the key is a string
@@ -589,11 +591,25 @@ integer."
   (:method ((mode (eql :concat))) #'kcdbappend))
 
 
-(defgeneric convert-to (type what-ptr)
+(defgeneric convert-to-lisp (type what-ptr)
   (:method ((type (eql :string)) what-ptr)
     (foreign-string-to-lisp what-ptr))
   (:method ((type (eql :integer)) what-ptr)
     (mem-aref what-ptr :int32)))
+
+(defgeneric convert-from-lisp (type what)
+  (:method ((type (eql :string)) what)
+    (convert-to-foreign what type))
+  (:method ((type (eql :integer)) what)
+    (convert-to-foreign what :int32))
+  (:method ((type (eql :octets)) what)
+    (with-foreign-objects (what-ptr :unsigned-char what-len))
+      (loop
+         for i from 0 below what-len
+         do (setf (mem-aref what-ptr :unsigned-char i) (aref what i)))
+      what-ptr))
+    
+    
 
 
 (defun make-octet-vector (&rest body)

@@ -23,6 +23,7 @@
 	   :kccurkey
 	   :kccurvalue
 	   :kccurdb
+	   :kccurjumpkey
 
 	   :dbm-open-flags
 	   :dbm-return-values)
