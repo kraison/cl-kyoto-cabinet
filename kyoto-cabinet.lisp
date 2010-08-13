@@ -598,7 +598,9 @@ integer."
   (:method ((type (eql :integer)) what-ptr)
     (mem-aref what-ptr :int32))
   (:method ((type (eql :octets)) what-ptr)
-    (copy-foreign-value what-ptr (foreign-type-size what-ptr))))
+    (let ((what-str (foreign-string-to-lisp what-ptr)))
+      (map-into (make-array (length what-str) :element-type 'octet)
+              #'char-code what-str))))
 
 (defgeneric convert-from-lisp (type what)
   (:method ((type (eql :string)) what)
