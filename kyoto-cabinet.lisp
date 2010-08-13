@@ -592,15 +592,13 @@ integer."
   (:method ((mode (eql :concat))) #'kcdbappend))
 
 
-(defgeneric convert-to-lisp (type what-ptr)
-  (:method ((type (eql :string)) what-ptr)
+(defgeneric convert-to-lisp (type what-ptr &optional size )
+  (:method ((type (eql :string)) what-ptr &optional size)
     (foreign-string-to-lisp what-ptr))
-  (:method ((type (eql :integer)) what-ptr)
+  (:method ((type (eql :integer)) what-ptr &optional size)
     (mem-aref what-ptr :int32))
-  (:method ((type (eql :octets)) what-ptr)
-    (let ((what-str (foreign-string-to-lisp what-ptr)))
-      (map-into (make-array (length what-str) :element-type 'octet)
-              #'char-code what-str))))
+  (:method ((type (eql :octets)) what-ptr &optional size )
+      (copy-foreign-value what-ptr size)))
 
 (defgeneric convert-from-lisp (type what)
   (:method ((type (eql :string)) what)
