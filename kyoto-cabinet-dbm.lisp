@@ -185,3 +185,9 @@
 
 (defmethod iter-remove ((iter kc-iterator))
   (kccurremove (ptr-of iter)))
+
+(defmethod iter-key ((iter kc-iterator) &optional (type :string))
+  (get-something iter 'kccurgetkey type))
+
+(defmethod iter-value ((iter kc-iterator) &optional (type :string))
+  (get-something iter 'kccurgetvalue type))

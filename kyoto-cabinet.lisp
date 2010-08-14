@@ -214,12 +214,6 @@ NIL if already at the last record."))
   (:documentation "Moves ITERATOR to the record at KEY. Only effective
 for B+ tree databases."))
 
-(defgeneric iter-get (iterator &optional type)
-  (:documentation "Returns the current value at ITERATOR. Type may be
-one of :STRING or :OCTETS , depending on how the value is to be
-treated. :STRING indicates that the value should be converted to a
-Lisp string, while :OCTETS indicates that the byte vector should be
-returned."))
 
 (defgeneric iter-put (iterator value &key mode)
   (:documentation "Inserts VALUE around ITERATOR. Mode may be one
@@ -234,6 +228,13 @@ databases."))
 (defgeneric iter-key (iterator &optional type)
   (:documentation "Returns current key at the ITERATOR position. Type
 may be one of :STRING or :OCTETS , depending on how the value is to be
+treated. :STRING indicates that the value should be converted to a
+Lisp string, while :OCTETS indicates that the byte vector should be
+returned."))
+
+(defgeneric iter-value (iterator &optional type)
+  (:documentation "Returns the current value at ITERATOR. Type may be
+one of :STRING or :OCTETS , depending on how the value is to be
 treated. :STRING indicates that the value should be converted to a
 Lisp string, while :OCTETS indicates that the byte vector should be
 returned."))
@@ -635,3 +636,9 @@ occurs, the transaction will rollback, otherwise it will commit."
                (if ,success
                    (dbm-commit ,db)
                    (dbm-rollback ,db))))))))
+
+
+(defun get-something (iter fn &optional (type :string))
+  (let* ((size (foreign-alloc :pointer))
+	 (val (funcall fn (ptr-of iter) size NIL)))
+    (convert-to-lisp type val size)))
