@@ -335,15 +335,15 @@ occurs, the transaction will rollback, otherwise it will commit."
                 ,@body))
          (if *in-transaction-p*
              (atomic-op)
-           (unwind-protect
-                (let ((*in-transaction-p* t))
-                  (prog2
-                      (dbm-begin ,db)
-                      (atomic-op)
-                    (setf ,success t)))
-             (if ,success
-                 (dbm-commit ,db)
-               (dbm-abort ,db))))))))
+	     (unwind-protect
+		  (let ((*in-transaction-p* t))
+		    (prog2
+			(dbm-begin ,db)
+			(atomic-op)
+		      (setf ,success t)))
+	       (if ,success
+		   (dbm-commit ,db)
+		   (dbm-abort ,db))))))))
 
 (defmacro with-iterator ((var db) &body body)
   "Evaluates BODY on with VAR bound to a new, open iterator on DB."
@@ -599,7 +599,7 @@ integer."
   (:method ((type (eql :integer)) what-ptr &optional size)
     (mem-aref what-ptr :int32))
   (:method ((type (eql :octets)) what-ptr &optional size )
-      (copy-foreign-value what-ptr size)))
+    (copy-foreign-value what-ptr size)))
 
 (defgeneric convert-from-lisp (type what)
   (:method ((type (eql :string)) what)
