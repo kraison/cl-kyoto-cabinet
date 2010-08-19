@@ -20,8 +20,8 @@
 	   :kccurjump
 	   :kccurstep
 	   :kccurget
-	   :kccurkey
-	   :kccurvalue
+	   :kccurgetvalue	   
+	   :kccurgetkey
 	   :kccurdb
 	   :kccurjumpkey
 	   :kccurremove

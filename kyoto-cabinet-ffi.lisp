@@ -301,15 +301,15 @@
 (cffi:defcfun ("kccurremove" kccurremove) :boolean
   (cur :pointer))
 
-(cffi:defcfun ("kccurgetkey" kccurgetkey) :string
+(cffi:defcfun ("kccurgetkey" kccurgetkey) :pointer
   (cur :pointer)
   (sp :pointer)
-  (step :pointer))
+  (step :boolean))
 
-(cffi:defcfun ("kccurgetvalue" kccurgetvalue) :string
+(cffi:defcfun ("kccurgetvalue" kccurgetvalue) :pointer
   (cur :pointer)
   (sp :pointer)
-  (step :pointer))
+  (step :boolean))
 
 (cffi:defcfun ("kccurget" kccurget) :pointer
   (cur :pointer)
