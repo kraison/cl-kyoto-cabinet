@@ -383,11 +383,11 @@ are cffi pointers."
   (declare (type function fn)
 	   (type integer key-len))
   (with-foreign-object (size-ptr :int)
-    (with-string-value (value-ptr (funcall fn (ptr-of db)
-					   key-ptr key-len size-ptr))
+    (let ((value-ptr (funcall fn (ptr-of db)
+					   key-ptr key-len size-ptr)))
       (if (null-pointer-p value-ptr)
 	  (maybe-raise-error db "(key ~a)" key-ptr)
-	  (values value-ptr size-ptr)))))
+	  (values value-ptr (mem-ref size-ptr :int))))))
 
 (defun get-string->string (db key fn)
   "Returns a value from DB under KEY using FN where the key and value
@@ -672,5 +672,5 @@ occurs, the transaction will rollback, otherwise it will commit."
     (convert-to-lisp type val size)))
 
 (defun get-pointer (iter fn)
-  (let* ((size (foreign-alloc :pointer)))
-    (values (funcall fn (ptr-of iter) size NIL) size)))
+  (with-foreign-object (size-ptr :int)
+    (values (funcall fn (ptr-of iter) size-ptr NIL) (mem-ref size-ptr :int))))
