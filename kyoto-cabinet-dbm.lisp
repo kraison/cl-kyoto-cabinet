@@ -98,6 +98,10 @@
   (let ((func (put-method-for mode)))
     (put-int32->octets db key value func)))
 
+(defun dbm-put-fast (db key key-len value value-len &key (mode :replace))
+  (let ((func (put-method-for mode)))
+    (put-pointer->pointer db key key-len value value-len func)))
+
 
 ;; Define overloaded get methods
 
@@ -119,6 +123,9 @@
       (:string (get-octets->string db key fn))
       (:octets (get-octets->octets db key fn)))))
 
+(defun dbm-get-fast (db key key-len)
+  (get-pointer->pointer db key key-len #'kcdbget))
+
 
 ;; Define overloaded remove methods
 
@@ -126,11 +133,13 @@
   (rem-string->value db key))
 
 (defmethod dbm-remove ((db kc-dbm) (key integer))
-  (rem-int32->value  db key))
+  (rem-int32->value db key))
 
 (defmethod dbm-remove ((db kc-dbm) (key vector))
-  (rem-octets->value  db key))
+  (rem-octets->value db key))
 
+(defun dbm-remove-fast (db key key-len)
+  (rem-pointer->value db key key-len))
 
 ;; Define iterator methods below
 
@@ -141,7 +150,6 @@
 	(setf iter-ptr (kcdbcursor db-ptr))))
     iterator))
 
-
 (defmethod iter-item ((iter kc-iterator) &key (key-type :string) (value-type :string))
   (let* ((key-size (foreign-alloc :pointer))
 	 (key-ptr (foreign-alloc :pointer))
@@ -150,16 +158,37 @@
 	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL))
 	 (key (convert-to-lisp key-type key-ptr key-size))
 	 (value (convert-to-lisp value-type (mem-ref value-ptr :pointer) value-size)))
-    (format t "TYPE: ~a ~a~%" key-type key-ptr)
-    (foreign-free key-size) (foreign-free key-ptr)
-    (foreign-free value-size) (foreign-free value-ptr)
-    (format t "KEY: ~a~%" key)
-    (format t "VALUE: ~a~%" value)
+    (foreign-free key-size) 
+    (foreign-free key-ptr)
+    (foreign-free value-size) 
+    (foreign-free value-ptr)
     (if (null key)
 	(progn
 	  (maybe-raise-error iter)
 	  ())
 	(values key value))))
+
+(defmethod iter-item-fast ((iter kc-iterator))
+  (let* ((key-size (foreign-alloc :pointer))
+	 (key-ptr (foreign-alloc :pointer))
+	 (value-size (foreign-alloc :pointer))
+	 (value-ptr (foreign-alloc :pointer))
+	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL)))
+    (values key-ptr key-size value-ptr value-size)))
+
+(defmethod iter-key ((iter kc-iterator) &optional (type :string))
+  (get-something iter 'kccurgetkey type))
+
+(defmethod iter-key-fast ((iter kc-iterator) &optional type)
+  (declare (ignore type))
+  (get-pointer iter 'kccurgetkey))
+
+(defmethod iter-value ((iter kc-iterator) &optional (type :string))
+  (get-something iter 'kccurgetvalue type))
+
+(defmethod iter-value-fast ((iter kc-iterator) &optional type)
+  (declare (ignore type))
+  (get-pointer iter 'kccurgetvalue))
 
 (defmethod iter-first ((iter kc-iterator))
   (kccurjump (ptr-of iter)))
@@ -173,8 +202,8 @@
 
 (defmethod iter-go-to ((iter kc-iterator) (key integer))
   (with-foreign-object (key-ptr :int32)
-      (setf (mem-ref key-ptr :int32) key)
-      (kccurjumpkey (ptr-of iter) key-ptr (foreign-type-size :int32))))
+    (setf (mem-ref key-ptr :int32) key)
+    (kccurjumpkey (ptr-of iter) key-ptr (foreign-type-size :int32))))
 
 (defmethod iter-go-to ((iter kc-iterator) (key vector))
   (let ((key-len (length key)))
@@ -183,11 +212,9 @@
 	 do (setf (mem-aref key-ptr :unsigned-char i) (aref key i)))
     (kccurjumpkey (ptr-of iter) key-ptr key-len))))
 
+(defmethod iter-go-to-fast ((iter kc-iterator) key-ptr key-len)
+  (kccurjumpkey (ptr-of iter) key-ptr key-len))
+
 (defmethod iter-remove ((iter kc-iterator))
   (kccurremove (ptr-of iter)))
 
-(defmethod iter-key ((iter kc-iterator) &optional (type :string))
-  (get-something iter 'kccurgetkey type))
-
-(defmethod iter-value ((iter kc-iterator) &optional (type :string))
-  (get-something iter 'kccurgetvalue type))

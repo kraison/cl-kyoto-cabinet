@@ -376,6 +376,19 @@ arguments."
                 :text "The :TRUNCATE argument may not be used in :READ mode"))
         (t t)))
 
+(defun get-pointer->pointer (db key key-len fn)
+  "Returns a value from DB under KEY using FN where the key and value
+are cffi pointers."
+  (declare (optimize (speed 3)))
+  (declare (type function fn)
+	   (type integer key-len))
+  (with-foreign-object (size-ptr :int)
+    (with-string-value (value-ptr (funcall fn (ptr-of db)
+					   key-ptr key-len size-ptr))
+      (if (null-pointer-p value-ptr)
+	  (maybe-raise-error db "(key ~a)" key)
+	  (values value-ptr size-ptr)))))
+
 (defun get-string->string (db key fn)
   "Returns a value from DB under KEY using FN where the key and value
 are strings."
@@ -472,6 +485,15 @@ vector of octets and value is a string."
       (when (and value-ptr (not (null-pointer-p value-ptr)))
         (foreign-free value-ptr)))))
 
+(defun put-pointer->pointer (db key-ptr key-len value-ptr value-len fn)
+  "Inserts VALUE into DB under KEY using FN where the key and value
+are cffi pointers."
+  (declare (optimize (speed 3)))
+  (declare (type function fn)
+	   (type integer key-len value-len))
+  (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
+      (maybe-raise-error db "(key ~a) (value ~a)" key-ptr value-ptr)))
+
 (defun put-string->string (db key value fn)
   "Inserts VALUE into DB under KEY using FN where the key and value
 are strings."
@@ -547,6 +569,12 @@ integer and the value is an octet vector."
          do (setf (mem-aref value-ptr :unsigned-char i) (aref value i)))
       (or (funcall fn (ptr-of db) key-ptr key-len value-ptr value-len)
         (maybe-raise-error db "(key ~a) (value ~a)" key value)))))
+
+(defun rem-pointer->value (db key key-len)
+  "Removes value from DB under KEY where the key is a cffi pointer"
+  (declare (optimize (speed 3)))
+  (or (kcdbremove (ptr-of db) key key-len)
+      (maybe-raise-error db "(key ~a)" key)))
 
 (defun rem-string->value (db key)
   "Removes value from DB under KEY where the key is a
@@ -642,3 +670,7 @@ occurs, the transaction will rollback, otherwise it will commit."
   (let* ((size (foreign-alloc :pointer))
 	 (val (funcall fn (ptr-of iter) size NIL)))
     (convert-to-lisp type val size)))
+
+(defun get-pointer (iter fn)
+  (let* ((size (foreign-alloc :pointer)))
+    (values (funcall fn (ptr-of iter) size NIL) size)))

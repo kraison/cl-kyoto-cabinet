@@ -49,6 +49,9 @@
    #:dbm-put
    #:dbm-get
    #:dbm-remove
+   #:dbm-put-fast
+   #:dbm-get-fast
+   #:dbm-remove-fast
    #:dbm-abort
    #:iter-open
    #:iter-first
@@ -59,9 +62,15 @@
    #:iter-put
    #:iter-remove
    #:iter-key
+   #:iter-value
    #:iter-get
    #:iter-close
    #:iter-item
+   #:iter-put-fast
+   #:iter-key-fast
+   #:iter-value-fast
+   #:iter-go-to-fast
+   #:iter-item-fast
 
    #:dbm-num-records
    #:dbm-file-size
