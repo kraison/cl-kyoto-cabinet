@@ -376,7 +376,7 @@ arguments."
                 :text "The :TRUNCATE argument may not be used in :READ mode"))
         (t t)))
 
-(defun get-pointer->pointer (db key key-len fn)
+(defun get-pointer->pointer (db key-ptr key-len fn)
   "Returns a value from DB under KEY using FN where the key and value
 are cffi pointers."
   (declare (optimize (speed 3)))
@@ -386,7 +386,7 @@ are cffi pointers."
     (with-string-value (value-ptr (funcall fn (ptr-of db)
 					   key-ptr key-len size-ptr))
       (if (null-pointer-p value-ptr)
-	  (maybe-raise-error db "(key ~a)" key)
+	  (maybe-raise-error db "(key ~a)" key-ptr)
 	  (values value-ptr size-ptr)))))
 
 (defun get-string->string (db key fn)
