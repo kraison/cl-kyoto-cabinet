@@ -174,7 +174,7 @@
 	 (value-size (foreign-alloc :pointer))
 	 (value-ptr (foreign-alloc :pointer))
 	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL)))
-    (values key-ptr key-size value-ptr value-size)))
+    (values key-ptr key-size (mem-ref value-ptr :pointer) value-size)))
 
 (defmethod iter-key ((iter kc-iterator) &optional (type :string))
   (get-something iter 'kccurgetkey type))

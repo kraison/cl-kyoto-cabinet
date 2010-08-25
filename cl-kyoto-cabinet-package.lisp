@@ -26,6 +26,8 @@
 	   :kccurjumpkey
 	   :kccurremove
 
+           :kcfree
+
 	   :dbm-open-flags
 	   :dbm-return-values)
   
