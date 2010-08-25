@@ -98,11 +98,11 @@
 (cffi:defcunion KCCUR
 	(cur :pointer))
 
-(cffi:defcfun ("kcmalloc" kcmalloc) :string
+(cffi:defcfun ("kcmalloc" kcmalloc) :pointer
   (size :pointer))
 
 (cffi:defcfun ("kcfree" kcfree) :void
-  (ptr :string))
+  (ptr :pointer))
 
 (cffi:defcfun ("kctime" kctime) :double)
 

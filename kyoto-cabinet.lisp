@@ -324,27 +324,6 @@ See the TC documentation for the meaning of the mode arguments."
        (when ,var
          (dbm-close ,var)))))
 
-(defmacro with-transaction ((db) &body body)
-  "Evaluates BODY in the context of a transaction on DB. If no
-transaction is in progress, a new one is started. If a transaction is
-already in progress, BODY is evaluated in its context. If an error
-occurs, the transaction will rollback, otherwise it will commit."
-  (let ((success (gensym)))
-    `(let ((,success nil))
-       (flet ((atomic-op ()
-                ,@body))
-         (if *in-transaction-p*
-             (atomic-op)
-	     (unwind-protect
-		  (let ((*in-transaction-p* t))
-		    (prog2
-			(dbm-begin ,db)
-			(atomic-op)
-		      (setf ,success t)))
-	       (if ,success
-		   (dbm-commit ,db)
-		   (dbm-abort ,db))))))))
-
 (defmacro with-iterator ((var db) &body body)
   "Evaluates BODY on with VAR bound to a new, open iterator on DB."
   `(let ((,var (iter-open ,db)))

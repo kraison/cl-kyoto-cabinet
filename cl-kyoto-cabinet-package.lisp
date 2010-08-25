@@ -27,6 +27,7 @@
 	   :kccurremove
 
            :kcfree
+	   :kcmalloc
 
 	   :dbm-open-flags
 	   :dbm-return-values)
@@ -41,6 +42,9 @@
    ;; Classes
    #:kc-dbm
 
+   ;; Specials
+   #:*in-transaction-p*
+
    ;; Generics
    #:dbm-open
    #:dbm-close
@@ -54,7 +58,6 @@
    #:dbm-put-fast
    #:dbm-get-fast
    #:dbm-remove-fast
-   #:dbm-abort
    #:iter-open
    #:iter-first
    #:iter-last
