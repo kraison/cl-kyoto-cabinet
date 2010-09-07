@@ -150,6 +150,9 @@
 	(setf iter-ptr (kcdbcursor db-ptr))))
     iterator))
 
+(defmethod iter-close ((iter kc-iterator))
+  (kccurdel (ptr-of iter)))
+
 (defmethod iter-item ((iter kc-iterator) &key (key-type :string) (value-type :string))
   (let* ((key-size (foreign-alloc :pointer))
 	 (key-ptr (foreign-alloc :pointer))
@@ -169,12 +172,11 @@
 	(values key value))))
 
 (defmethod iter-item-fast ((iter kc-iterator))
-  (let* ((key-size (foreign-alloc :pointer))
-	 (key-ptr (foreign-alloc :pointer))
-	 (value-size (foreign-alloc :pointer))
+  (let* ((key-size (foreign-alloc :unsigned-int))
+	 (value-size (foreign-alloc :unsigned-int))
 	 (value-ptr (foreign-alloc :pointer))
-	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL)))
-    (values key-ptr key-size (mem-ref value-ptr :pointer) value-size)))
+	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size nil)))
+    (values key-ptr key-size value-ptr value-size)))
 
 (defmethod iter-key ((iter kc-iterator) &optional (type :string))
   (get-something iter 'kccurgetkey type))
