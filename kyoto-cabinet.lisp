@@ -340,7 +340,7 @@ See the TC documentation for the meaning of the mode arguments."
           (progn
             ,@body)
        (when (and value-ptr (not (null-pointer-p ,value-ptr)))
-         (foreign-string-free ,value-ptr)))))
+         (kcfree ,value-ptr)))))
 
 (defun check-open-mode (mode)
   "Checks the list MODE for valid and consistent database opening
@@ -559,7 +559,7 @@ integer and the value is an octet vector."
   "Removes value from DB under KEY where the key is a
 string."
   (declare (optimize (speed 3)))
-  (with-foreign-string ((key-ptr key-len) key)
+  (with-foreign-string ((key-ptr key-len) key :null-terminated-p nil)
     (or (kcdbremove (ptr-of db) key key-len)
 	(maybe-raise-error db "(key ~a)" key))))
 
