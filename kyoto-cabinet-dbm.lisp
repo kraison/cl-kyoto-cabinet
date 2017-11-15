@@ -1,6 +1,6 @@
 (in-package #:kyoto-cabinet)
 
-(defmethod initialize-instance :after ((db kc-dbm) &key instance)     
+(defmethod initialize-instance :after ((db kc-dbm) &key instance)
   (with-slots (ptr) db
     (if (null instance)
 	(setf ptr (kcdbnew))
@@ -32,7 +32,7 @@
 			      &rest message-arguments)
   (let ((ecode (kcdbecode (kccurdb (ptr-of iter)))))
     (maybe-raise-error-with-ecode iter ecode message message-arguments)))
-	   
+
 (defun maybe-raise-error-with-ecode (what ecode &optional message
 				     &rest message-arguments)
    (cond ((= (foreign-enum-value 'dbm-return-values :success)
@@ -74,6 +74,9 @@
 
 (defmethod dbm-rollback ((db kc-dbm))
   (kcdbendtran (ptr-of db) NIL))
+
+(defmethod dbm-num-records ((db kc-dbm))
+  (kcdbcount (ptr-of db)))
 
 
 ;; Define overloaded put methods
@@ -161,9 +164,9 @@
 	 (key-ptr (kccurget (ptr-of iter) key-size value-ptr value-size NIL))
 	 (key (convert-to-lisp key-type key-ptr key-size))
 	 (value (convert-to-lisp value-type (mem-ref value-ptr :pointer) value-size)))
-    (foreign-free key-size) 
+    (foreign-free key-size)
     (foreign-free key-ptr)
-    (foreign-free value-size) 
+    (foreign-free value-size)
     (foreign-free value-ptr)
     (if (null key)
 	(progn
@@ -219,4 +222,3 @@
 
 (defmethod iter-remove ((iter kc-iterator))
   (kccurremove (ptr-of iter)))
-

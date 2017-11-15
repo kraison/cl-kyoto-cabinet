@@ -267,7 +267,7 @@
   (db :pointer)
   (src :string))
 
-(cffi:defcfun ("kcdbcount" kcdbcount) :pointer
+(cffi:defcfun ("kcdbcount" kcdbcount) :int64
   (db :pointer))
 
 (cffi:defcfun ("kcdbsize" kcdbsize) :pointer
@@ -337,4 +337,3 @@
 
 (cffi:defcfun ("kccuremsg" kccuremsg) :string
   (cur :pointer))
-  

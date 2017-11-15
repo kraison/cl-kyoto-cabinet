@@ -14,13 +14,14 @@
 	   :kcdbappend
 	   :kcdbget
 	   :kcdbremove
+           :kcdbcount
 
 	   :kcdbcursor
 	   :kccurdel
 	   :kccurjump
 	   :kccurstep
 	   :kccurget
-	   :kccurgetvalue	   
+	   :kccurgetvalue
 	   :kccurgetkey
 	   :kccurdb
 	   :kccurjumpkey
@@ -31,7 +32,7 @@
 
 	   :dbm-open-flags
 	   :dbm-return-values)
-  
+
   (:documentation "CFFI interface to Kyoto Cabinet functions. The
   original C function names are preserved."))
 
@@ -48,6 +49,7 @@
    ;; Generics
    #:dbm-open
    #:dbm-close
+   #:dbm-clear
    #:dbm-begin
    #:dbm-commit
    #:dbm-rollback
@@ -92,4 +94,3 @@
   Cabinet. The original C function names are not preserved (see
   the :kyoto-cabinet-ffi package for functions that do preserve the
   nomenclature)."))
-
