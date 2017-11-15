@@ -44,13 +44,13 @@
     :version "0.1"
     :author "Kevin Raison <last name @ chatsubo dot net>"
     :licence "New BSD"
+    :description "Lisp Interface to Kyoto Cabinet DBM (http://fallabs.com/kyotocabinet/)"
     :depends-on ((:version :cffi "0.10.3"))
     :components ((:file "cl-kyoto-cabinet-package")
-		 (:file "kyoto-cabinet-ffi" 
+		 (:file "kyoto-cabinet-ffi"
 			:depends-on ("cl-kyoto-cabinet-package"))
 		 (:file "kyoto-cabinet"
 			:depends-on ("cl-kyoto-cabinet-package" "kyoto-cabinet-ffi"))
 		 (:file "kyoto-cabinet-dbm"
 			:depends-on ("cl-kyoto-cabinet-package" "kyoto-cabinet" "kyoto-cabinet-ffi"))
 		 ))
-
