@@ -619,7 +619,7 @@ integer."
          for i from 0 below (length what)
          do (setf (mem-aref what-ptr :unsigned-char i) (aref what i)))
       what-ptr)))
-    
+
 (defun make-octet-vector (&rest body)
   (make-array (length body) :initial-contents body :element-type '(unsigned-byte 8)))
 
@@ -646,9 +646,18 @@ occurs, the transaction will rollback, otherwise it will commit."
 
 
 (defun get-something (iter fn &optional (type :string))
+  (with-foreign-object (size :pointer)
+    (let ((val (funcall fn (ptr-of iter) size NIL)))
+      (unwind-protect
+           (convert-to-lisp type val size)
+        (kcfree val)))))
+
+#|
+(defun get-something (iter fn &optional (type :string))
   (let* ((size (foreign-alloc :pointer))
 	 (val (funcall fn (ptr-of iter) size NIL)))
     (convert-to-lisp type val size)))
+|#
 
 (defun get-pointer (iter fn)
   (with-foreign-object (size-ptr :int)
